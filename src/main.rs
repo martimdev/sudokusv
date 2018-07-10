@@ -1,9 +1,8 @@
-mod sudoku;
+extern crate sudokusv;
 
-use sudoku::Sudoku;
+use sudokusv::Sudoku;
 
 fn main() {
-
     let mut column1: [u32; 9] = [0; 9];
     column1[0] = 0;
     column1[1] = 0;

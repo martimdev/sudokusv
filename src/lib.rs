@@ -1,7 +1,7 @@
 extern crate term_painter;
 
-use self::term_painter::Color::Custom;
-use self::term_painter::ToStyle;
+use term_painter::Color::Custom;
+use term_painter::ToStyle;
 use std::thread;
 use std::time::Duration;
 
