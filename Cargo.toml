@@ -5,3 +5,4 @@ authors = ["Martim Marques <martimasterdeveloper@gmail.com>"]
 
 [dependencies]
 term-painter = "0.2.4"
+ndarray = "0.11.0"
