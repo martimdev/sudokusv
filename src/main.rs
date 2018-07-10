@@ -114,11 +114,7 @@ fn main() {
     columns[7] = column8;
     columns[8] = column9;
 
-    let mut sudoku = Sudoku {
-        columns,
-        lines: columns
-    };
+    let sudoku = Sudoku::new(columns);
+    sudoku.solve();
 
-    sudoku.lines = sudoku.get_lines_by_columns();
-    sudoku::print_sudoku(sudoku);
 }

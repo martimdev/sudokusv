@@ -2,22 +2,34 @@ extern crate term_painter;
 
 use self::term_painter::Color::Custom;
 use self::term_painter::ToStyle;
+use std::thread;
+use std::time::Duration;
 
 pub struct Sudoku {
     pub columns: [[u32; 9]; 9],
-    pub lines: [[u32; 9]; 9],
+    pub horizontal_lines: [[u32; 9]; 9],
+    pub vertical_lines: [[u32; 9]; 9],
 }
 
 impl Sudoku {
-    pub fn _solve(&self) {
-        self.columns.iter().for_each(|column| {
-            column.iter().for_each(|column_index| {
-                println!("{p0}", p0 = column_index);
-            })
-        });
+    pub fn new(columns: [[u32; 9]; 9]) -> Sudoku {
+        let mut sudoku_instance = Sudoku {
+            columns,
+            horizontal_lines: [[0; 9]; 9],
+            vertical_lines: [[0; 9]; 9],
+        };
+        sudoku_instance.horizontal_lines = sudoku_instance.get_horizontal_lines_by_columns();
+        return sudoku_instance;
     }
 
-    pub fn get_lines_by_columns(&self) -> [[u32; 9]; 9] {
+    pub fn solve(&self) {
+        loop {
+            print_sudoku(self);
+            thread::sleep(Duration::from_millis(500));
+        }
+    }
+
+    pub fn get_horizontal_lines_by_columns(&self) -> [[u32; 9]; 9] {
         let mut lines_by_columns: [[u32; 9]; 9] = [[0; 9]; 9];
 
         let mut line1: [u32; 9] = [0; 9];
@@ -130,17 +142,15 @@ impl Sudoku {
 
         return lines_by_columns;
     }
-
-    fn _get_columns_by_lines(&self) {}
 }
 
-pub fn print_sudoku(sudoku: Sudoku) {
+pub fn print_sudoku(sudoku: &Sudoku) {
     println!("{}{}{}",
              Custom(1).paint("----------"),
              Custom(2).paint("---------"),
              Custom(3).paint("----------"),
     );
-    for (i, line) in sudoku.lines.iter().enumerate() {
+    for (i, line) in sudoku.horizontal_lines.iter().enumerate() {
         match i {
             0 | 1 | 2 => print!("{}", Custom(1).paint("|")),
             3 | 4 | 5 => print!("{}", Custom(4).paint("|")),
@@ -154,7 +164,7 @@ pub fn print_sudoku(sudoku: Sudoku) {
                         0 | 1 | 2 => print!(" {} ", Custom(1).paint(lines_index)),
                         3 | 4 | 5 => print!(" {} ", Custom(2).paint(lines_index)),
                         6 | 7 | 8 => print!(" {} ", Custom(3).paint(lines_index)),
-                        _ => print!(" {index} ", index=lines_index)
+                        _ => print!(" {index} ", index = lines_index)
                     }
                 }
                 3 | 4 | 5 => {
@@ -162,7 +172,7 @@ pub fn print_sudoku(sudoku: Sudoku) {
                         0 | 1 | 2 => print!(" {} ", Custom(4).paint(lines_index)),
                         3 | 4 | 5 => print!(" {} ", Custom(7).paint(lines_index)),
                         6 | 7 | 8 => print!(" {} ", Custom(6).paint(lines_index)),
-                        _ => print!(" {index} ", index=lines_index)
+                        _ => print!(" {index} ", index = lines_index)
                     }
                 }
                 6 | 7 | 8 => {
@@ -170,7 +180,7 @@ pub fn print_sudoku(sudoku: Sudoku) {
                         0 | 1 | 2 => print!(" {} ", Custom(5).paint(lines_index)),
                         3 | 4 | 5 => print!(" {} ", Custom(10).paint(lines_index)),
                         6 | 7 | 8 => print!(" {} ", Custom(9).paint(lines_index)),
-                        _ => print!(" {index} ", index=lines_index)
+                        _ => print!(" {index} ", index = lines_index)
                     }
                 }
                 _ => print!(" {} ", lines_index)
@@ -192,7 +202,7 @@ pub fn print_sudoku(sudoku: Sudoku) {
                          Custom(7).paint("---------"),
                          Custom(6).paint("----------"),
                 );
-            },
+            }
             6 | 7 | 8 => {
                 println!("{}", Custom(9).paint("|"));
                 println!("{}{}{}",
@@ -200,12 +210,11 @@ pub fn print_sudoku(sudoku: Sudoku) {
                          Custom(10).paint("---------"),
                          Custom(9).paint("----------"),
                 );
-            },
+            }
             _ => {
                 println!("|");
                 println!("-----------------------------");
             }
         }
-
     }
 }
