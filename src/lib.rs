@@ -18,16 +18,29 @@ impl Sudoku {
             horizontal_lines,
             vertical_lines: [[0; 9]; 9],
         };
-        sudoku_instance.columns = sudoku_instance.get_columns_by_horizontal_lines();
-        sudoku_instance.vertical_lines = sudoku_instance.get_vertical_lines_by_horizontal_lines();
+        sudoku_instance.update_by_horizontal_lines();
         return sudoku_instance;
     }
 
     pub fn solve(&self) {
-        loop {
+        while self.is_correct() {
             print_sudoku(self);
             thread::sleep(Duration::from_millis(500));
         }
+    }
+
+    fn is_correct(&self) -> bool {
+        fn verify_array(array2: [[u32; 9]; 9]) -> bool {
+            for array1 in array2.iter() {
+                for (i, _) in array1.iter().enumerate() {
+                    if array1[i] != 0 && array1.iter().filter(|&n| *n == array1[i]).count() > 1 {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+        verify_array(self.horizontal_lines) && verify_array(self.vertical_lines) && verify_array(self.columns)
     }
 
     fn get_columns_by_horizontal_lines(&self) -> [[u32; 9]; 9] {
@@ -88,6 +101,11 @@ impl Sudoku {
             }
         }
         vertical_lines
+    }
+
+    fn update_by_horizontal_lines(&mut self) {
+        self.columns = self.get_columns_by_horizontal_lines();
+        self.vertical_lines = self.get_vertical_lines_by_horizontal_lines();
     }
 }
 

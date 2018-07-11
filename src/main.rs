@@ -16,5 +16,5 @@ fn main() {
     ];
 
     let sudokusv = Sudoku::new(horizontal_lines);
-    //sudokusv.solve();
+    sudokusv.solve();
 }
