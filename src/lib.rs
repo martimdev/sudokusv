@@ -52,6 +52,16 @@ impl Sudoku {
             self.solve_by_column(7, [6, 7, 8], [3, 4, 5]);
             self.solve_by_column(8, [6, 7, 8], [6, 7, 8]);
             self.update_by_columns();
+            self.solve_by_horizontal_line(0, [0, 1, 2]);
+            self.solve_by_horizontal_line(1, [0, 1, 2]);
+            self.solve_by_horizontal_line(2, [0, 1, 2]);
+            self.solve_by_horizontal_line(3, [3, 4, 5]);
+            self.solve_by_horizontal_line(4, [3, 4, 5]);
+            self.solve_by_horizontal_line(5, [3, 4, 5]);
+            self.solve_by_horizontal_line(6, [6, 7, 8]);
+            self.solve_by_horizontal_line(7, [6, 7, 8]);
+            self.solve_by_horizontal_line(8, [6, 7, 8]);
+            self.update_by_horizontal_lines();
             print_sudoku(self);
         }
     }
@@ -104,6 +114,44 @@ impl Sudoku {
         self.update_by_columns()
     }
 
+    fn solve_by_horizontal_line(&mut self, line_index: usize, columns_indexes: [usize; 3]) {
+        let missing_values = get_missing_values(self.horizontal_lines[line_index]);
+        let mut line = self.horizontal_lines[line_index];
+        for value in missing_values {
+            if self.columns[columns_indexes[0]].contains(&value) {
+                line[0] = 10;
+                line[1] = 10;
+                line[2] = 10;
+            }
+            if self.columns[columns_indexes[1]].contains(&value) {
+                line[3] = 10;
+                line[4] = 10;
+                line[5] = 10;
+            }
+            if self.columns[columns_indexes[2]].contains(&value) {
+                line[6] = 10;
+                line[7] = 10;
+                line[8] = 10;
+            }
+            for i in 0..9 {
+                if self.vertical_lines[i].contains(&value) {
+                    line[i] = 10;
+                }
+            }
+            if line.iter().filter(|&n| *n == 0).count() == 1 {
+                let mut position = 0;
+                for (i, v) in line.iter().enumerate() {
+                    if v.clone() == 0 {
+                        position = i;
+                    }
+                };
+                self.horizontal_lines[line_index][position] = value;
+            }
+            line = self.horizontal_lines[line_index];
+        }
+        self.update_by_horizontal_lines()
+    }
+
     fn is_correct(&self) -> bool {
         fn verify_array(array2: [[u32; 9]; 9]) -> bool {
             for array1 in array2.iter() {
@@ -120,10 +168,8 @@ impl Sudoku {
 
     fn is_solved(&self) -> bool {
         for line in self.horizontal_lines.iter() {
-            for value in line.iter() {
-                if value.clone() == 0 {
-                    return false;
-                }
+            if line.contains(&0) {
+                return false;
             }
         }
         true
