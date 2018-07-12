@@ -23,18 +23,6 @@ impl Sudoku {
     }
 
     pub fn solve(&mut self) {
-        fn get_missing_values(array: [u32; 9]) -> Vec<u32> {
-            let mut missing_values = Vec::new();
-            missing_values.extend([1, 2, 3, 4, 5, 6, 7, 8, 9].iter());
-            for value in array.iter() {
-                if value.clone() != 0 {
-                    let index = missing_values.iter().position(|&v| v == value.clone()).unwrap();
-                    missing_values.remove(index);
-                }
-            }
-            missing_values
-        }
-
         fn finalize(array2: [[u32; 9]; 9]) -> [[u32; 9]; 9] {
             let mut array_return = array2;
             for (index, array) in array2.iter().enumerate() {
@@ -47,16 +35,73 @@ impl Sudoku {
             array_return
         }
 
-        while self.is_correct() {
-            print_sudoku(self);
-            thread::sleep(Duration::from_millis(1000));
+        while self.is_correct() && !self.is_solved() {
+            thread::sleep(Duration::from_millis(500));
             self.horizontal_lines = finalize(self.horizontal_lines);
             self.update_by_horizontal_lines();
             self.vertical_lines = finalize(self.vertical_lines);
             self.update_by_vertical_lines();
             self.columns = finalize(self.columns);
+            self.solve_by_column(0, [0, 1, 2], [0, 1, 2]);
+            self.solve_by_column(1, [0, 1, 2], [3, 4, 5]);
+            self.solve_by_column(2, [0, 1, 2], [6, 7, 8]);
+            self.solve_by_column(3, [3, 4, 5], [0, 1, 2]);
+            self.solve_by_column(4, [3, 4, 5], [3, 4, 5]);
+            self.solve_by_column(5, [3, 4, 5], [6, 7, 8]);
+            self.solve_by_column(6, [6, 7, 8], [0, 1, 2]);
+            self.solve_by_column(7, [6, 7, 8], [3, 4, 5]);
+            self.solve_by_column(8, [6, 7, 8], [6, 7, 8]);
             self.update_by_columns();
+            print_sudoku(self);
         }
+    }
+
+    fn solve_by_column(&mut self, column_index: usize, horizontal_lines_indexes: [usize; 3], vertical_lines_indexes: [usize; 3]) {
+        let missing_values = get_missing_values(self.columns[column_index]);
+        let mut column = self.columns[column_index];
+        for value in missing_values {
+            if self.horizontal_lines[horizontal_lines_indexes[0]].contains(&value) {
+                column[0] = 10;
+                column[1] = 10;
+                column[2] = 10;
+            }
+            if self.horizontal_lines[horizontal_lines_indexes[1]].contains(&value) {
+                column[3] = 10;
+                column[4] = 10;
+                column[5] = 10;
+            }
+            if self.horizontal_lines[horizontal_lines_indexes[2]].contains(&value) {
+                column[6] = 10;
+                column[7] = 10;
+                column[8] = 10;
+            }
+            if self.vertical_lines[vertical_lines_indexes[0]].contains(&value) {
+                column[0] = 10;
+                column[3] = 10;
+                column[6] = 10;
+            }
+            if self.vertical_lines[vertical_lines_indexes[1]].contains(&value) {
+                column[1] = 10;
+                column[4] = 10;
+                column[7] = 10;
+            }
+            if self.vertical_lines[vertical_lines_indexes[2]].contains(&value) {
+                column[2] = 10;
+                column[5] = 10;
+                column[8] = 10;
+            }
+            if column.iter().filter(|&n| *n == 0).count() == 1 {
+                let mut position = 0;
+                for (i, v) in column.iter().enumerate() {
+                    if v.clone() == 0 {
+                        position = i;
+                    }
+                };
+                self.columns[column_index][position] = value;
+            }
+            column = self.columns[column_index];
+        }
+        self.update_by_columns()
     }
 
     fn is_correct(&self) -> bool {
@@ -71,6 +116,17 @@ impl Sudoku {
             return true;
         }
         verify_array(self.horizontal_lines) && verify_array(self.vertical_lines) && verify_array(self.columns)
+    }
+
+    fn is_solved(&self) -> bool {
+        for line in self.horizontal_lines.iter() {
+            for value in line.iter() {
+                if value.clone() == 0 {
+                    return false;
+                }
+            }
+        }
+        true
     }
 
     fn get_columns_by_horizontal_lines(&self) -> [[u32; 9]; 9] {
@@ -271,6 +327,18 @@ impl Sudoku {
         self.horizontal_lines = self.get_horizontal_lines_by_columns();
         self.vertical_lines = self.get_vertical_lines_by_horizontal_lines();
     }
+}
+
+fn get_missing_values(array: [u32; 9]) -> Vec<u32> {
+    let mut missing_values = Vec::new();
+    missing_values.extend([1, 2, 3, 4, 5, 6, 7, 8, 9].iter());
+    for value in array.iter() {
+        if value.clone() != 0 {
+            let index = missing_values.iter().position(|&v| v == value.clone()).unwrap();
+            missing_values.remove(index);
+        }
+    }
+    missing_values
 }
 
 pub fn print_sudoku(sudoku: &Sudoku) {
