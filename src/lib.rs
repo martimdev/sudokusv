@@ -36,7 +36,6 @@ impl Sudoku {
         }
 
         while self.is_correct() && !self.is_solved() {
-            thread::sleep(Duration::from_millis(500));
             self.horizontal_lines = finalize(self.horizontal_lines);
             self.update_by_horizontal_lines();
             self.vertical_lines = finalize(self.vertical_lines);
@@ -62,7 +61,18 @@ impl Sudoku {
             self.solve_by_horizontal_line(7, [6, 7, 8]);
             self.solve_by_horizontal_line(8, [6, 7, 8]);
             self.update_by_horizontal_lines();
+            self.solve_by_vertical_line(0, [0, 3, 6]);
+            self.solve_by_vertical_line(1, [0, 3, 6]);
+            self.solve_by_vertical_line(2, [0, 3, 6]);
+            self.solve_by_vertical_line(3, [1, 4, 7]);
+            self.solve_by_vertical_line(4, [1, 4, 7]);
+            self.solve_by_vertical_line(5, [1, 4, 7]);
+            self.solve_by_vertical_line(6, [2, 5, 8]);
+            self.solve_by_vertical_line(7, [2, 5, 8]);
+            self.solve_by_vertical_line(8, [2, 5, 8]);
+            self.update_by_vertical_lines();
             print_sudoku(self);
+            thread::sleep(Duration::from_millis(500));
         }
     }
 
@@ -150,6 +160,44 @@ impl Sudoku {
             line = self.horizontal_lines[line_index];
         }
         self.update_by_horizontal_lines()
+    }
+
+    fn solve_by_vertical_line(&mut self, line_index: usize, columns_indexes: [usize; 3]) {
+        let missing_values = get_missing_values(self.vertical_lines[line_index]);
+        let mut line = self.vertical_lines[line_index];
+        for value in missing_values {
+            if self.columns[columns_indexes[0]].contains(&value) {
+                line[0] = 10;
+                line[1] = 10;
+                line[2] = 10;
+            }
+            if self.columns[columns_indexes[1]].contains(&value) {
+                line[3] = 10;
+                line[4] = 10;
+                line[5] = 10;
+            }
+            if self.columns[columns_indexes[2]].contains(&value) {
+                line[6] = 10;
+                line[7] = 10;
+                line[8] = 10;
+            }
+            for i in 0..9 {
+                if self.horizontal_lines[i].contains(&value) {
+                    line[i] = 10;
+                }
+            }
+            if line.iter().filter(|&n| *n == 0).count() == 1 {
+                let mut position = 0;
+                for (i, v) in line.iter().enumerate() {
+                    if v.clone() == 0 {
+                        position = i;
+                    }
+                };
+                self.vertical_lines[line_index][position] = value;
+            }
+            line = self.vertical_lines[line_index];
+        }
+        self.update_by_vertical_lines();
     }
 
     fn is_correct(&self) -> bool {
